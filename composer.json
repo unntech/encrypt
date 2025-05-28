@@ -1,0 +1,23 @@
+{
+  "name": "unntech/encrypt",
+  "description": "Commonly used encryption libraries",
+  "license": "MIT",
+  "homepage": "https://github.com/unntech/encrypt",
+  "authors": [
+    {
+      "name": "Jason Lin",
+      "email": "lzs9605@gmail.com",
+      "homepage": "https://www.zhisg.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.4",
+    "ext-openssl": "*",
+    "ext-json": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "UNNTech\\Encrypt\\": "src/"
+    }
+  }
+}
