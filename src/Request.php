@@ -22,6 +22,7 @@ class Request
      *   'signType'=>'SHA256', <br>
      *   'headers'=>[] <br>
      *   'encrypted'=>true <br>
+     *   'encryption'=>'RSAIES', <br>
      * ]</p>
      * @return static
      */

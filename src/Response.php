@@ -23,6 +23,7 @@ class Response
      *   'signType'=>'SHA256', <br>
      *   'headers'=>[] <br>
      *   'encrypted'=>true <br>
+     *   'encryption'=>'RSAIES', <br>
      * ]</p>
      * @return static
      */
@@ -187,6 +188,94 @@ class Response
             'signType' => self::$signType,
         ];
         self::response($ret);
+    }
+
+    /**
+     * 验签
+     * @param array $data
+     * @param bool $perforce 为true时则必须要签名，NONE签名方式也验签失败
+     * @return bool
+     */
+    public static function verifySign(array &$data, bool $perforce = false) : bool
+    {
+        $data['encrypted'] = $data['encrypted'] ?? false;
+        $data['signType'] = $data['signType'] ?? 'NONE';
+        $dataSign = $data['sign'] ?? 'NONE';
+        if($perforce && empty(self::$secret)){
+            self::$secret = mt_rand().uniqid();
+        }
+        $verify = false;
+        if($data['signType'] != 'NONE'){
+            $head = $data['head'];
+            ksort($head);
+            $body = $data['body'];
+            ksort($body);
+            $data_bodyEncrypted =  $data['bodyEncrypted'] ?? '';
+            $_signString = json_encode($head,JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . json_encode($body, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . $data_bodyEncrypted;
+            switch($data['signType']){
+                case 'MD5':
+                    $signString = $_signString . self::$secret;
+                    $sign = strtoupper(md5($signString));
+                    if($dataSign == $sign){
+                        $verify = true;
+                    }
+                    break;
+                case 'SHA256':
+                    $signString = $_signString . self::$secret;
+                    $sign = strtoupper(hash("sha256", $signString));
+                    if($dataSign == $sign){
+                        $verify = true;
+                    }
+                    break;
+                case 'RSA':
+                    $signString = $_signString ;
+                    if(empty(self::$public_key)){
+                        //$verify = false;
+                    }else{
+                        $rsa = new RSA(self::$public_key, self::$private_key);
+                        $verify = $rsa->verifySign($signString, $dataSign);
+                    }
+                    break;
+                case 'ECDSA':
+                    $signString = $_signString ;
+                    if(empty(self::$public_key)){
+                        //$verify = false;
+                    }else{
+                        $ecdsa = new ECDSA(self::$public_key, self::$private_key);
+                        $verify = $ecdsa->verifySign($signString, $dataSign);
+                    }
+                    break;
+                default:
+
+            }
+        }else{
+            $verify = true;
+        }
+        if(isset($data['encrypted']) && $data['encrypted'] === true && $verify === true){
+            switch ($data['encryption']['type']){
+                case 'ECIES':
+                    $en = $data['encryption'];
+                    $ecdsa = new ECDSA(self::$public_key, self::$private_key);
+                    $dc = $ecdsa->decrypt($data['bodyEncrypted'], $en['tempPublicKey'], $en['iv'], $en['mac'], $en['code']);
+                    break;
+                case 'RSAIES':
+                    $en = $data['encryption'];
+                    $rsa = new RSA(self::$public_key, self::$private_key);
+                    $dc = $rsa->decrypt_ies($data['bodyEncrypted'], $en['cipher'], $en['iv'], $en['mac'], $en['code']);
+                    break;
+                default:
+                    $rsa = new RSA(self::$public_key, self::$private_key);
+                    $dc = $rsa->decrypt($data['bodyEncrypted']);
+            }
+            $data['body'] = json_decode($dc, true);
+        }
+        if($perforce === true){
+            if(!in_array($data['signType'], ['MD5', 'SHA256', 'ECDSA', 'RSA'])){
+                $verify = false;
+            }
+        }
+
+        return $verify;
     }
 
     /**
