@@ -33,6 +33,7 @@ composer update unntech/encrypt
 ~~~
 encrypt/
 ├── src                                     #
+│   ├── AES.php                             # AES（Advanced Encryption Standard，高级加密标准）
 │   ├── ECDSA.php                           # ECDSA 椭圆曲线数字签名
 │   ├── Encode.php                          # 编码常用函数
 │   ├── encrypt.md                          # 加解密及验签文档

@@ -112,7 +112,7 @@ class ECDSA
     /**
      * 数据生成签名
      * @param string $data 需签名数据
-     * @param string $code 默认使用base64编码返回签名 （支持 base64 | hex | bin）
+     * @param string $code 默认使用base64编码返回签名 （支持 base64 | base64Url | hex | bin）
      * @return false|string
      */
     public function sign(string $data, string $code = 'base64')

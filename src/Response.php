@@ -165,7 +165,7 @@ class Response
             'body'     => $data,
             'signType' => self::$signType,
         ];
-        self::response($ret);
+        static::response($ret);
     }
 
     /**
@@ -187,7 +187,7 @@ class Response
             'body'     => $data,
             'signType' => self::$signType,
         ];
-        self::response($ret);
+        static::response($ret);
     }
 
     /**

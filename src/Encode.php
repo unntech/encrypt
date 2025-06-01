@@ -11,7 +11,10 @@ class Encode
         }
         switch ( strtolower( $code ) ) {
             case 'base64':
-                $data = base64_encode( (string) $data );
+                $data = base64_encode( $data );
+                break;
+            case 'base64url':
+                $data = self::base64UrlEncode( $data );
                 break;
             case 'hex':
                 $data = bin2hex( $data );
@@ -30,6 +33,9 @@ class Encode
         switch ( strtolower( $code ) ) {
             case 'base64':
                 $data = base64_decode( $data );
+                break;
+            case 'base64url':
+                $data = self::base64UrlDecode( $data );
                 break;
             case 'hex':
                 $data = self::_hex2bin( $data );
@@ -77,6 +83,31 @@ class Encode
             return false;
 
         return $details['bits'];
+    }
+
+    /**
+     * base64UrlEncode   https://jwt.io/  中base64UrlEncode编码实现
+     * @param string $input 需要编码的字符串
+     * @return string
+     */
+    public static function base64UrlEncode(string $input): string
+    {
+        return str_replace('=', '', strtr(base64_encode($input), '+/', '-_'));
+    }
+
+    /**
+     * base64UrlEncode  https://jwt.io/  中base64UrlEncode解码实现
+     * @param string $input 需要解码的字符串
+     * @return bool|string
+     */
+    public static function base64UrlDecode(string $input)
+    {
+        $remainder = strlen($input) % 4;
+        if ($remainder) {
+            $len = 4 - $remainder;
+            $input .= str_repeat('=', $len);
+        }
+        return base64_decode(strtr($input, '-_', '+/'));
     }
 
     private static function _hex2bin( $hex = false ) {
