@@ -1,6 +1,9 @@
 CHANGELOG
 =========
 
+### v1.0.3 `2025-06-09`
+* ECDSA 增加数组签名 signArray 和验签 verifySignArray 方法
+
 ### v1.0.2 `2025-06-01`
 * AES（Advanced Encryption Standard，高级加密标准）
 * Encode 增加 base64Url 编码

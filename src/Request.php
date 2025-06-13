@@ -150,7 +150,6 @@ class Request
      * @param array $data
      * @param string $type
      * @return array|false|object|string
-     * @throws \DOMException
      */
     public static function generate(array $data =[], string $type = 'json')
     {

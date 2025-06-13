@@ -152,7 +152,7 @@ class RSA
      * 数组生成签名
      * 规则：键值升序排序，转JSON字符串(增加中文不转unicode和不转义反斜杠两个参数)生成签名
      * @param array $data
-     * @param string $code 签名编码（base64/hex/bin）
+     * @param string $code 签名编码（base64 | base64Url | hex | bin）
      * @return array 包函sign字段的数组
      */
     public function signArray(array $data, string $code = 'base64' ): array
@@ -182,7 +182,7 @@ class RSA
     /**
      * RSA 加密
      * @param string $plaintext 明文
-     * @param string $code 密文编码（base64/hex/bin）
+     * @param string $code 密文编码（base64 | base64Url | hex | bin）
      * @param int $padding 填充方式（貌似php有bug，所以目前仅支持OPENSSL_PKCS1_PADDING）
      * @return false|string
      */

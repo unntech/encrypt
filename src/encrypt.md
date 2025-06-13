@@ -10,6 +10,24 @@
 * encrypted `true: 数据加密`
 * encryption `加密参数信息，加密类型支持：` RSA | RSAIES | ECIES
 * bodyEncrypted `加密密文`
+```json
+{
+  "head": {
+    "errcode": 0,
+    "msg": "success",
+    "unique_id": "aEbplYhZ2-dAVh-oAckpgwAAADI",
+    "timestamp": 1749477781
+  },
+  "body": {
+    "order_id": 123,
+    "money": 1001.23
+  },
+  "signType": "SHA256",
+  "encrypted": false,
+  "bodyEncrypted": "",
+  "sign": "8DC01138945CAEB7EECEADA3A091F20E7B0DCE2D22D1BE657DD6A6E91CBA05E0"
+}
+```
 
 ### 签名算法
 * #### MD5 | SHA256
@@ -39,6 +57,22 @@ Response::success(101, '错误示例');
 * encrypted `true: 数据加密`
 * encryption `加密参数信息，加密类型支持：` RSA | RSAIES | ECIES
 * bodyEncrypted `加密密文`
+```
+array(6) {
+  ["head"] => array(2) {
+    ["unique_id"] => string(27) "aEbqHohZ2-dAVh-oAcktMgAAADU"
+    ["timestamp"] => int(1749477918)
+  }
+  ["body"] => array(2) {
+    ["order_id"] => int(123)
+    ["money"] => float(1001.23)
+  }
+  ["signType"] => string(6) "SHA256"
+  ["encrypted"] => bool(false)
+  ["bodyEncrypted"] => string(0) ""
+  ["sign"] => string(64) "0833BBCCF0F75F97D29FEEED87EE2382F3A7A05A4EFDD7544D95A7CA2189C654"
+}
+```
 
 ### 签名算法
 * #### MD5 | SHA256

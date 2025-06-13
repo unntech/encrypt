@@ -154,6 +154,37 @@ class ECDSA
     }
 
     /**
+     * 数组生成签名
+     * 规则：键值升序排序，转JSON字符串(增加中文不转unicode和不转义反斜杠两个参数)生成签名
+     * @param array $data
+     * @param string $code 签名编码（base64 | base64Url | hex | bin）
+     * @return array 包函sign字段的数组
+     */
+    public function signArray(array $data, string $code = 'base64' ): array
+    {
+        if(array_key_exists('sign', $data)){
+            unset( $data[ 'sign' ] );
+        }
+        ksort($data);
+        $data['sign'] = $this->sign(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), $code);
+        return $data;
+    }
+
+    /**
+     * 验证签名数组
+     * @param array $data
+     * @param string $code
+     * @return bool
+     */
+    public function verifySignArray(array $data, string $code = 'base64'): bool
+    {
+        $sign = $data['sign'] ?? '';
+        unset($data['sign']);
+        ksort($data);
+        return $this->verifySign(json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), $sign, $code);
+    }
+
+    /**
      * ECIES加密
      * 使用 openssl_pkey_derive('对方公钥', '自己私钥') 获取共享密钥， 椭圆典线 Diffie-Hellman (ECDH)算法生成
      * 为增加安全性，使用临时密钥对的私钥，然后把临时公钥跟结果一并给对方
@@ -235,7 +266,7 @@ class ECDSA
         // 3. 解密密文
         $plaintext = openssl_decrypt(Encode::decode($ciphertext, $code), 'aes-128-cfb', $symmetricKey, OPENSSL_RAW_DATA, Encode::decode($iv, $code));
 
-        return $plaintext;
+        return $plaintext === false ? null : $plaintext;
     }
 
     /**
