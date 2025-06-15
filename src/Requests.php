@@ -1,16 +1,16 @@
 <?php
 namespace UNNTech\Encrypt;
 
-class Request
+class Requests
 {
-    protected static string $signType = 'NONE';
-    protected static string $secret = '';
-    protected static string $private_key = '';
-    protected static int $private_key_bits = 1024;
-    protected static string $public_key = '';
-    protected static array $headers = [];
-    protected static bool $encrypted = false;
-    protected static string $encryption = 'RSA';
+    protected string $signType = 'NONE';
+    protected string $secret = '';
+    protected string $private_key = '';
+    protected int $private_key_bits = 1024;
+    protected string $public_key = '';
+    protected array $headers = [];
+    protected bool $encrypted = false;
+    protected string $encryption = 'RSA';
     protected static $instance;
 
     /**
@@ -24,139 +24,156 @@ class Request
      *   'encrypted'=>true <br>
      *   'encryption'=>'RSAIES', <br>
      * ]</p>
-     * @return static
+     * @return $this
      */
-    public static function instance(array $options = [])
+    public function __construct(array $options = [])
     {
         if(isset($options['secret'])){
-            self::$secret = $options['secret'];
+            $this->secret = $options['secret'];
         }
         if(isset($options['private_key'])){
-            self::$private_key = $options['private_key'];
+            $this->private_key = $options['private_key'];
         }
         if(isset($options['private_key_bits'])){
-            self::$private_key_bits = $options['private_key_bits'];
+            $this->private_key_bits = $options['private_key_bits'];
         }
         if(isset($options['public_key'])){
-            self::$public_key = $options['public_key'];
+            $this->public_key = $options['public_key'];
         }
         if(isset($options['signType'])){
-            self::$signType = $options['signType'];
+            $this->signType = $options['signType'];
         }
         if(isset($options['headers'])){
-            self::$headers = $options['headers'];
+            $this->headers = $options['headers'];
         }
         if(isset($options['encrypted'])){
-            self::$encrypted = $options['encrypted'];
+            $this->encrypted = $options['encrypted'];
         }
         if(isset($options['encryption'])){
-            self::$encryption = $options['encryption'];
+            $this->encryption = $options['encryption'];
         }
-        if (self::$instance === null) {
-            self::$instance = new static();
+    }
+
+    /**
+     * @param array $options <p><br>
+     * [ 'secret'=>'', <br>
+     *   'private_key'=>'', <br>
+     *   'private_key_bits'=>1024, <br>
+     *   'public_key'=>'', <br>
+     *   'signType'=>'SHA256', <br>
+     *   'headers'=>[] <br>
+     *   'encrypted'=>true <br>
+     *   'encryption'=>'RSAIES', <br>
+     * ]</p>
+     * @return $this
+     */
+    public static function instance(array $options = []): Requests
+    {
+        if (static::$instance === null) {
+            static::$instance = new static($options);
         }
-        return self::$instance;
+        return static::$instance;
     }
 
     /**
      * 获取签名方式
      * @return string
      */
-    public static function getSignType(): string
+    public function getSignType(): string
     {
-        return self::$signType;
+        return $this->signType;
     }
 
-    public static function getOptions(): array
+    public function getOptions(): array
     {
         return [
-            'secret'           => self::$secret,
-            'private_key'      => self::$private_key,
-            'private_key_bits' => self::$private_key_bits,
-            'public_key'       => self::$public_key,
-            'encrypted'        => self::$encrypted,
-            'encryption'       => self::$encryption,
-            'signType'         => self::$signType,
-            'headers'          => self::$headers
+            'secret'           => $this->secret,
+            'private_key'      => $this->private_key,
+            'private_key_bits' => $this->private_key_bits,
+            'public_key'       => $this->public_key,
+            'encrypted'        => $this->encrypted,
+            'encryption'       => $this->encryption,
+            'signType'         => $this->signType,
+            'headers'          => $this->headers
         ];
     }
 
     /**
      * 设置secret
      * @param string $secret
-     * @return static
+     * @return $this
      */
-    public static function secret(string $secret)
+    public function secret(string $secret)
     {
-        self::$secret = $secret;
-        return self::instance();
+        $this->secret = $secret;
+        return $this;
     }
 
     /**
      * 设置签名类型
      * @param string $signType MD5 | SHA256 | RSA | ECDSA
-     * @return static
+     * @return $this
      */
-    public static function signType(string $signType)
+    public function signType(string $signType)
     {
-        self::$signType = $signType;
-        return self::instance();
+        $this->signType = $signType;
+        return $this;
     }
 
     /**
      * 设置RSA私钥
      * @param string $privateKey 私钥
      * @param int $bits 私钥长度位
-     * @return static
+     * @return $this
      */
-    public static function privateKey(string $privateKey, int $bits = 1024)
+    public function privateKey(string $privateKey, int $bits = 1024)
     {
-        self::$private_key = $privateKey;
-        return self::instance();
+        $this->private_key = $privateKey;
+        return $this;
     }
 
     /**
      * 设置RSA公钥
      * @param string $publicKey 公钥
-     * @return static
+     * @return $this
      */
-    public static function publicKey(string $publicKey)
+    public function publicKey(string $publicKey)
     {
-        self::$public_key = $publicKey;
-        return self::instance();
+        $this->public_key = $publicKey;
+        return $this;
     }
 
     /**
      * 设置输出公共 header 参数值
      * @param array $headers
-     * @return static
+     * @return $this
      */
-    public static function headers(array $headers = [])
+    public function headers(array $headers = [])
     {
-        self::$headers = $headers;
-        return self::instance();
+        $this->headers = $headers;
+        return $this;
     }
 
     /**
      * 设置输出数据为加密
      * @param bool $encrypted
-     * @return static
+     * @return $this
      */
-    public static function encrypted(bool $encrypted = true)
+    public function encrypted(bool $encrypted = true)
     {
-        self::$encrypted = $encrypted;
-        return self::instance();
+        $this->encrypted = $encrypted;
+        return $this;
     }
 
     /**
      * 设置加密类型
      * @param string $encryption RSA | ECIES | RSAIES
-     * @return static
+     * @return $this
      */
-    public static function encryption(string $encryption = 'RSA')
+    public function encryption(string $encryption = 'RSA')
     {
-        self::$encryption = $encryption;
-        return self::instance();
+        $this->encryption = $encryption;
+        return $this;
     }
 
     /**
@@ -165,7 +182,7 @@ class Request
      * @param string $type
      * @return array|false|object|string
      */
-    public static function generate(array $data =[], string $type = 'json')
+    public function generate(array $data =[], string $type = 'json')
     {
         $r = [
             'head'     => [
@@ -173,9 +190,9 @@ class Request
                 'timestamp' => time(),
             ],
             'body'     => $data,
-            'signType' => self::$signType,
+            'signType' => $this->signType,
         ];
-        $d = self::_generate($r);
+        $d = $this->_generate($r);
         $type = strtolower($type);
         switch ($type) {
             case 'json':
@@ -186,7 +203,7 @@ class Request
                 $dom->formatOutput = true; // 格式化输出
                 $root = $dom->createElement('root');
                 $dom->appendChild($root);
-                self::arrayToXmlDom($d, $dom, $root);
+                $this->arrayToXmlDom($d, $dom, $root);
                 $ret = $dom->saveXML();
                 break;
             case 'object':
@@ -204,13 +221,13 @@ class Request
      * @param bool $perforce 为true时则必须要签名，NONE签名方式也验签失败
      * @return bool
      */
-    public static function verifySign(array &$data, bool $perforce = false) : bool
+    public function verifySign(array &$data, bool $perforce = false) : bool
     {
         $data['encrypted'] = $data['encrypted'] ?? false;
         $data['signType'] = $data['signType'] ?? 'NONE';
         $dataSign = $data['sign'] ?? 'NONE';
-        if($perforce && empty(self::$secret)){
-            self::$secret = mt_rand().uniqid();
+        if($perforce && empty($this->secret)){
+            $this->secret = mt_rand().uniqid();
         }
         $verify = false;
         if($data['signType'] != 'NONE'){
@@ -222,14 +239,14 @@ class Request
             $_signString = json_encode($head,JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . json_encode($body, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . $data_bodyEncrypted;
             switch($data['signType']){
                 case 'MD5':
-                    $signString = $_signString . self::$secret;
+                    $signString = $_signString . $this->secret;
                     $sign = strtoupper(md5($signString));
                     if($dataSign == $sign){
                         $verify = true;
                     }
                     break;
                 case 'SHA256':
-                    $signString = $_signString . self::$secret;
+                    $signString = $_signString . $this->secret;
                     $sign = strtoupper(hash("sha256", $signString));
                     if($dataSign == $sign){
                         $verify = true;
@@ -237,19 +254,19 @@ class Request
                     break;
                 case 'RSA':
                     $signString = $_signString ;
-                    if(empty(self::$public_key)){
+                    if(empty($this->public_key)){
                         //$verify = false;
                     }else{
-                        $rsa = new RSA(self::$public_key, self::$private_key);
+                        $rsa = new RSA($this->public_key, $this->private_key);
                         $verify = $rsa->verifySign($signString, $dataSign);
                     }
                     break;
                 case 'ECDSA':
                     $signString = $_signString ;
-                    if(empty(self::$public_key)){
+                    if(empty($this->public_key)){
                         //$verify = false;
                     }else{
-                        $ecdsa = new ECDSA(self::$public_key, self::$private_key);
+                        $ecdsa = new ECDSA($this->public_key, $this->private_key);
                         $verify = $ecdsa->verifySign($signString, $dataSign);
                     }
                     break;
@@ -263,16 +280,16 @@ class Request
             switch ($data['encryption']['type']){
                 case 'ECIES':
                     $en = $data['encryption'];
-                    $ecdsa = new ECDSA(self::$public_key, self::$private_key);
+                    $ecdsa = new ECDSA($this->public_key, $this->private_key);
                     $dc = $ecdsa->decrypt($data['bodyEncrypted'], $en['tempPublicKey'], $en['iv'], $en['mac'], $en['code']);
                     break;
                 case 'RSAIES':
                     $en = $data['encryption'];
-                    $rsa = new RSA(self::$public_key, self::$private_key);
+                    $rsa = new RSA($this->public_key, $this->private_key);
                     $dc = $rsa->decrypt_ies($data['bodyEncrypted'], $en['cipher'], $en['iv'], $en['mac'], $en['code']);
                     break;
                 default:
-                    $rsa = new RSA(self::$public_key, self::$private_key);
+                    $rsa = new RSA($this->public_key, $this->private_key);
                     $dc = $rsa->decrypt($data['bodyEncrypted']);
             }
             $data['body'] = json_decode($dc, true);
@@ -292,20 +309,20 @@ class Request
      * signType 提供 MD5、SHA256、RSA、ECDSA，验签时json encode增加中文不转unicode和不转义反斜杠两个参数
      * @return array
      */
-    protected static function _generate(array $data) : array
+    protected function _generate(array $data) : array
     {
         if(empty($data['body'])){
             $data['body'] = ['data'=>''];
         }
-        if(!empty(self::$headers) && is_array(self::$headers)){
-            $data['head'] += self::$headers;
+        if(!empty($this->headers) && is_array($this->headers)){
+            $data['head'] += $this->headers;
         }
         $data['encrypted'] = false;
         $data['bodyEncrypted'] = '';
-        if(self::$encrypted){
-            switch (self::$encryption){
+        if($this->encrypted){
+            switch ($this->encryption){
                 case 'ECIES':
-                    $ecdsa = new ECDSA(self::$public_key, self::$private_key);
+                    $ecdsa = new ECDSA($this->public_key, $this->private_key);
                     $_enda = $ecdsa->encrypt(json_encode($data['body'], JSON_UNESCAPED_SLASHES));
                     if($_enda !== false) { //加密成功
                         $data['encrypted'] = true;
@@ -318,10 +335,12 @@ class Request
                             'code'          => $_enda['code'],
                             'mac'           => $_enda['mac'],
                         ];
+                    }else{
+                        $_encryption = ['type'=>'ECIES'];
                     }
                     break;
                 case 'RSAIES':
-                    $rsa = new RSA(self::$public_key, self::$private_key);
+                    $rsa = new RSA($this->public_key, $this->private_key);
                     $_enda = $rsa->encrypt_ies(json_encode($data['body'], JSON_UNESCAPED_SLASHES));
                     if($_enda !== false) { //加密成功
                         $data['encrypted'] = true;
@@ -334,10 +353,12 @@ class Request
                             'code'   => $_enda['code'],
                             'mac'    => $_enda['mac'],
                         ];
+                    }else{
+                        $_encryption = ['type'=>'RSAIES'];
                     }
                     break;
                 default:
-                    $rsa = new RSA(self::$public_key, self::$private_key);
+                    $rsa = new RSA($this->public_key, $this->private_key);
                     $_enda = $rsa->encrypt(json_encode($data['body'], JSON_UNESCAPED_SLASHES));
                     if($_enda !== false){ //加密成功
                         $data['encrypted'] = true;
@@ -356,31 +377,31 @@ class Request
             $_signString = json_encode($head,JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . json_encode($body, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . $data['bodyEncrypted'];
             switch($data['signType']){
                 case 'MD5':
-                    $signString = $_signString . self::$secret;
+                    $signString = $_signString . $this->secret;
                     $sign = strtoupper(md5($signString));
                     $data['sign'] = $sign;
                     break;
                 case 'SHA256':
-                    $signString = $_signString . self::$secret;
+                    $signString = $_signString . $this->secret;
                     $sign = strtoupper(hash("sha256", $signString));
                     $data['sign'] = $sign;
                     break;
                 case 'RSA':
                     $signString = $_signString ;
-                    if(empty(self::$private_key)){
+                    if(empty($this->private_key)){
                         $data['sign'] = '';
                     }else{
-                        $rsa = new RSA(self::$public_key, self::$private_key);
+                        $rsa = new RSA($this->public_key, $this->private_key);
                         $sign = $rsa->sign($signString);
                         $data['sign'] = $sign === false ? '' : $sign;
                     }
                     break;
                 case 'ECDSA':
                     $signString = $_signString ;
-                    if(empty(self::$private_key)){
+                    if(empty($this->private_key)){
                         $data['sign'] = '';
                     }else{
-                        $ecdsa = new ECDSA(self::$public_key, self::$private_key);
+                        $ecdsa = new ECDSA($this->public_key, $this->private_key);
                         $sign = $ecdsa->sign($signString);
                         $data['sign'] = $sign === false ? '' : $sign;
                     }
@@ -394,7 +415,7 @@ class Request
         return $data;
     }
 
-    protected static function arrayToXmlDom($data, \DOMDocument $dom, $parent) {
+    protected function arrayToXmlDom($data, \DOMDocument $dom, $parent) {
         foreach ($data as $key => $value) {
             if (is_array($value)) {
                 if (is_numeric($key)) {
@@ -402,7 +423,7 @@ class Request
                 }
                 $subnode = $dom->createElement($key);
                 $parent->appendChild($subnode);
-                self::arrayToXmlDom($value, $dom, $subnode);
+                $this->arrayToXmlDom($value, $dom, $subnode);
             } else {
                 $child = $dom->createElement($key, htmlspecialchars($value));
                 $parent->appendChild($child);

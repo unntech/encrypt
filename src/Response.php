@@ -63,9 +63,23 @@ class Response
      * 获取签名方式
      * @return string
      */
-    public function getSignType(): string
+    public static function getSignType(): string
     {
         return self::$signType;
+    }
+
+    public static function getOptions(): array
+    {
+        return [
+            'secret'           => self::$secret,
+            'private_key'      => self::$private_key,
+            'private_key_bits' => self::$private_key_bits,
+            'public_key'       => self::$public_key,
+            'encrypted'        => self::$encrypted,
+            'encryption'       => self::$encryption,
+            'signType'         => self::$signType,
+            'headers'          => self::$headers
+        ];
     }
 
     /**
@@ -310,6 +324,8 @@ class Response
                             'code'          => $_enda['code'],
                             'mac'           => $_enda['mac'],
                         ];
+                    }else{
+                        $_encryption = ['type'=>'ECIES'];
                     }
                     break;
                 case 'RSAIES':
@@ -326,6 +342,8 @@ class Response
                             'code'   => $_enda['code'],
                             'mac'    => $_enda['mac'],
                         ];
+                    }else{
+                        $_encryption = ['type'=>'RSAIES'];
                     }
                     break;
                 default:

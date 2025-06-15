@@ -1,8 +1,9 @@
 CHANGELOG
 =========
 
-### v1.0.3 `2025-06-09`
+### v1.0.3 `2025-06-15`
 * ECDSA 增加数组签名 signArray 和验签 verifySignArray 方法
+* 增加 Responses 和 Requests 方便实例化调用，适用一个程序中需要不同参数多个请求或输出，无需重复设置参数
 
 ### v1.0.2 `2025-06-01`
 * AES（Advanced Encryption Standard，高级加密标准）

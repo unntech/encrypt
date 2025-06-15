@@ -98,27 +98,28 @@ Request::verifySign($data);
 * 生成临时ECDSA 密钥对
 * 使用对方公钥和临时私钥通过ECDH算法生成共享密钥
 * 生成随机AES密钥iv值
-* 用共享密钥对数据进行AES-128-CFB加密 参数 OPENSSL_RAW_DATA
-* 密文和iv值进行base64处理（支持HEX）
-* 使用SHA256计算哈希值(mac)，用于接收者验证数据完整性
+* 用共享密钥和随机iv值对数据进行AES-128-CFB加密 参数 OPENSSL_RAW_DATA
+* 密文和iv值进行base64处理（还支持HEX|base64url|bin编码）
+* 使用SHA256计算密文哈希值(mac)，用于接收者验证数据完整性
 * 把 临时公钥 `tempPublicKey` 向量 `iv` 编码方式 `code` 密文哈希值 `mac` 加密类型 `ECIES` 放入 encryption 字段
 
 ### ECIES 解密方式详解
 * 把接收到的密文使用SHA256计算哈希值，验证mac值是否相同，判定数据是否完整
 * 把接收到的 临时公钥 `tempPublicKey` 和自己的私钥通过ECDH算法生成共享密钥
-* 用共享密钥当作AES密钥和收到的向量 `iv` 采用 aes-128-cfb 进行解密， 参数 OPENSSL_RAW_DATA
+* 把密文和向量`iv`编码还原 `base64_decode`
+* 用共享密钥当作AES密钥和收到的向量 `iv` 采用 aes-128-cfb 对密文进行解密， 参数 OPENSSL_RAW_DATA
 * 得到原文
 
 ### RSAIES 加密方式详解
 * 生成随机AES密钥，使用 RSA 加密方法对其加密
 * 生成随机AES密钥iv值
 * 用随机AES密钥对数据进行AES-128-CFB加密，参数 OPENSSL_RAW_DATA
-* 密文和iv值进行base64处理（支持HEX）
-* 使用SHA256计算哈希值(mac)，用于接收者验证数据完整性
-* 把 加密的随机AES密钥 `cipher` 向量 `iv` 编码方式 `code` 密文哈希值 `mac` 加密类型 `RSAIES` 放入 encryption 字段
+* 密文和iv值、加密的随机AES密钥进行base64处理（还支持HEX|base64url|bin编码）
+* 使用SHA256对密文计算哈希值(mac)，用于接收者验证数据完整性
+* 把 加密的随机AES密钥 `cipher` 向量 `iv` 和密文  编码方式 `code` 密文哈希值 `mac` 加密类型 `RSAIES` 放入 encryption 字段
 
 ### RSAIES 解密方式详解
 * 把接收到的密文使用SHA256计算哈希值，验证mac值是否相同，判定数据是否完整
 * 把接收到的 加密的随机AES密钥 `cipher` 编码还原 `base64_decode` 后，使用 RSA 解密方法对其解密得到AES密钥原文
-* 用得到的随机AES密钥和收到的向量 `iv` 采用 aes-128-cfb 进行解密， 参数 OPENSSL_RAW_DATA
+* 用得到的随机AES密钥和收到的向量 `iv` (还原 `base64_decode`) 采用 aes-128-cfb 对密文进行解密，密文需编码还原 `base64_decode`， 参数 OPENSSL_RAW_DATA
 * 得到原文
