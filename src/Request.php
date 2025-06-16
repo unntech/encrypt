@@ -318,6 +318,8 @@ class Request
                             'code'          => $_enda['code'],
                             'mac'           => $_enda['mac'],
                         ];
+                    }else{
+                        $_encryption = ['type'=>'ECIES'];
                     }
                     break;
                 case 'RSAIES':
@@ -334,6 +336,8 @@ class Request
                             'code'   => $_enda['code'],
                             'mac'    => $_enda['mac'],
                         ];
+                    }else{
+                        $_encryption = ['type'=>'RSAIES'];
                     }
                     break;
                 default:

@@ -1,6 +1,9 @@
 CHANGELOG
 =========
 
+### v1.0.4 `2025-06-16`
+* Response 增加`return_data`属性，可配置response是直接输出还是返回数组
+
 ### v1.0.3 `2025-06-15`
 * ECDSA 增加数组签名 signArray 和验签 verifySignArray 方法
 * 增加 Responses 和 Requests 方便实例化调用，适用一个程序中需要不同参数多个请求或输出，无需重复设置参数

@@ -12,6 +12,7 @@ class Responses
     protected array $headers = [];
     protected bool $encrypted = false;
     protected string $encryption = 'RSA';
+    protected bool $return_data = false;
     protected static $instance;
 
     /**
@@ -24,10 +25,50 @@ class Responses
      *   'headers'=>[] <br>
      *   'encrypted'=>true <br>
      *   'encryption'=>'RSAIES', <br>
+     *   'return_data'=>false <br>
      * ]</p>
      * @return $this
      */
     public function __construct(array $options = [])
+    {
+        return $this->setOptions($options);
+    }
+
+    /**
+     * @param array $options <p><br>
+     * [ 'secret'=>'', <br>
+     *   'private_key'=>'', <br>
+     *   'private_key_bits'=>1024, <br>
+     *   'public_key'=>'', <br>
+     *   'signType'=>'SHA256', <br>
+     *   'headers'=>[] <br>
+     *   'encrypted'=>true <br>
+     *   'encryption'=>'RSAIES', <br>
+     *   'return_data'=>false <br>
+     * ]</p>
+     * @return $this
+     */
+    public static function instance(array $options = []): Responses
+    {
+
+        if (static::$instance === null) {
+            static::$instance = new static($options);
+        }else{
+            static::$instance->setOptions($options);
+        }
+        return static::$instance;
+    }
+
+    /**
+     * 获取签名方式
+     * @return string
+     */
+    public function getSignType(): string
+    {
+        return $this->signType;
+    }
+
+    public function setOptions(array $options): Responses
     {
         if(isset($options['secret'])){
             $this->secret = $options['secret'];
@@ -53,38 +94,10 @@ class Responses
         if(isset($options['encryption'])){
             $this->encryption = $options['encryption'];
         }
-        return $this;
-    }
-
-    /**
-     * @param array $options <p><br>
-     * [ 'secret'=>'', <br>
-     *   'private_key'=>'', <br>
-     *   'private_key_bits'=>1024, <br>
-     *   'public_key'=>'', <br>
-     *   'signType'=>'SHA256', <br>
-     *   'headers'=>[] <br>
-     *   'encrypted'=>true <br>
-     *   'encryption'=>'RSAIES', <br>
-     * ]</p>
-     * @return $this
-     */
-    public static function instance(array $options = []): Responses
-    {
-
-        if (static::$instance === null) {
-            static::$instance = new static($options);
+        if(isset($options['return_data'])){
+            $this->return_data = $options['return_data'];
         }
-        return static::$instance;
-    }
-
-    /**
-     * 获取签名方式
-     * @return string
-     */
-    public function getSignType(): string
-    {
-        return $this->signType;
+        return $this;
     }
 
     public function getOptions(): array
@@ -97,7 +110,8 @@ class Responses
             'encrypted'        => $this->encrypted,
             'encryption'       => $this->encryption,
             'signType'         => $this->signType,
-            'headers'          => $this->headers
+            'headers'          => $this->headers,
+            'return_data'      => $this->return_data,
         ];
     }
 
@@ -179,12 +193,18 @@ class Responses
         return $this;
     }
 
+    public function returnData(bool $return_data = true)
+    {
+        $this->return_data = $return_data;
+        return $this;
+    }
+
     /**
      * 输出完成数据
      * @param array $data
      * @param int $errCode
      * @param string $msg
-     * @return void
+     * @return array|void
      */
     public function success(array $data = [], int $errCode = 0, string $msg = 'success')
     {
@@ -198,7 +218,7 @@ class Responses
             'body'     => $data,
             'signType' => $this->signType,
         ];
-        $this->response($ret);
+        return $this->response($ret);
     }
 
     /**
@@ -206,7 +226,7 @@ class Responses
      * @param int $errCode
      * @param string $msg
      * @param array $data
-     * @return void
+     * @return array|void
      */
     public function error(int $errCode = 0, string $msg = 'fail', array $data = [])
     {
@@ -220,7 +240,7 @@ class Responses
             'body'     => $data,
             'signType' => $this->signType,
         ];
-        $this->response($ret);
+        return $this->response($ret);
     }
 
     /**
@@ -427,11 +447,14 @@ class Responses
      * 接口数据输出
      * @param array $data
      * signType 提供 MD5、SHA256验签时json encode增加中文不转unicode和不转义反斜杠两个参数
-     * @return void
+     * @return array|void
      */
     protected function response(array $data)
     {
         $data = $this->_generate($data);
+        if($this->return_data){
+            return $data;
+        }
 
         header("Access-Control-Allow-Origin: *");
         header("Content-Type: application/json; charset=utf-8");

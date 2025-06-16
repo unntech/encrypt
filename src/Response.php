@@ -12,6 +12,7 @@ class Response
     protected static array $headers = [];
     protected static bool $encrypted = false;
     protected static string $encryption = 'RSA';
+    protected static bool $return_data = false;
     protected static $instance;
 
     /**
@@ -24,6 +25,7 @@ class Response
      *   'headers'=>[] <br>
      *   'encrypted'=>true <br>
      *   'encryption'=>'RSAIES', <br>
+     *   'return_data'=>false <br>
      * ]</p>
      * @return static
      */
@@ -53,6 +55,10 @@ class Response
         if(isset($options['encryption'])){
             self::$encryption = $options['encryption'];
         }
+        if(isset($options['return_data'])){
+            self::$return_data = $options['return_data'];
+        }
+
         if (self::$instance === null) {
             self::$instance = new static();
         }
@@ -78,7 +84,8 @@ class Response
             'encrypted'        => self::$encrypted,
             'encryption'       => self::$encryption,
             'signType'         => self::$signType,
-            'headers'          => self::$headers
+            'headers'          => self::$headers,
+            'return_data'      => self::$return_data,
         ];
     }
 
@@ -160,12 +167,18 @@ class Response
         return self::instance();
     }
 
+    public static function returnData(bool $return_data = true)
+    {
+        self::$return_data = $return_data;
+        return self::instance();
+    }
+
     /**
      * 输出完成数据
      * @param array $data
      * @param int $errCode
      * @param string $msg
-     * @return void
+     * @return array|void
      */
     public static function success(array $data = [], int $errCode = 0, string $msg = 'success')
     {
@@ -179,7 +192,7 @@ class Response
             'body'     => $data,
             'signType' => self::$signType,
         ];
-        static::response($ret);
+        return static::response($ret);
     }
 
     /**
@@ -187,7 +200,7 @@ class Response
      * @param int $errCode
      * @param string $msg
      * @param array $data
-     * @return void
+     * @return array|void
      */
     public static function error(int $errCode = 0, string $msg = 'fail', array $data = [])
     {
@@ -201,7 +214,7 @@ class Response
             'body'     => $data,
             'signType' => self::$signType,
         ];
-        static::response($ret);
+        return static::response($ret);
     }
 
     /**
@@ -408,11 +421,14 @@ class Response
      * 接口数据输出
      * @param array $data
      * signType 提供 MD5、SHA256验签时json encode增加中文不转unicode和不转义反斜杠两个参数
-     * @return void
+     * @return array|void
      */
     protected static function response(array $data)
     {
         $data = self::_generate($data);
+        if(self::$return_data){
+            return $data;
+        }
 
         header("Access-Control-Allow-Origin: *");
         header("Content-Type: application/json; charset=utf-8");
