@@ -12,6 +12,7 @@ class Responses
     protected array $headers = [];
     protected bool $encrypted = false;
     protected string $encryption = 'RSA';
+    protected int $json_encode_flags = JSON_UNESCAPED_SLASHES;
     protected bool $return_data = false;
     protected static $instance;
 
@@ -25,6 +26,7 @@ class Responses
      *   'headers'=>[] <br>
      *   'encrypted'=>true <br>
      *   'encryption'=>'RSAIES', <br>
+     *   'json_encode_flags'=>JSON_UNESCAPED_SLASHES, <br>
      *   'return_data'=>false <br>
      * ]</p>
      * @return $this
@@ -44,6 +46,7 @@ class Responses
      *   'headers'=>[] <br>
      *   'encrypted'=>true <br>
      *   'encryption'=>'RSAIES', <br>
+     *   'json_encode_flags'=>JSON_UNESCAPED_SLASHES, <br>
      *   'return_data'=>false <br>
      * ]</p>
      * @return $this
@@ -97,22 +100,33 @@ class Responses
         if(isset($options['return_data'])){
             $this->return_data = $options['return_data'];
         }
+        if(isset($options['json_encode_flags'])){
+            $this->json_encode_flags = $options['json_encode_flags'];
+        }
+
         return $this;
     }
 
     public function getOptions(): array
     {
         return [
-            'secret'           => $this->secret,
-            'private_key'      => $this->private_key,
-            'private_key_bits' => $this->private_key_bits,
-            'public_key'       => $this->public_key,
-            'encrypted'        => $this->encrypted,
-            'encryption'       => $this->encryption,
-            'signType'         => $this->signType,
-            'headers'          => $this->headers,
-            'return_data'      => $this->return_data,
+            'secret'            => $this->secret,
+            'private_key'       => $this->private_key,
+            'private_key_bits'  => $this->private_key_bits,
+            'public_key'        => $this->public_key,
+            'encrypted'         => $this->encrypted,
+            'encryption'        => $this->encryption,
+            'signType'          => $this->signType,
+            'headers'           => $this->headers,
+            'json_encode_flags' => $this->json_encode_flags,
+            'return_data'       => $this->return_data,
         ];
+    }
+
+    public function jsonEncodeFlags(int $flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+    {
+        $this->json_encode_flags = $flags;
+        return $this;
     }
 
     /**
@@ -351,7 +365,7 @@ class Responses
             switch ($this->encryption){
                 case 'ECIES':
                     $ecdsa = new ECDSA($this->public_key, $this->private_key);
-                    $_enda = $ecdsa->encrypt(json_encode($data['body'], JSON_UNESCAPED_SLASHES));
+                    $_enda = $ecdsa->encrypt(json_encode($data['body'], $this->json_encode_flags));
                     if($_enda !== false) { //加密成功
                         $data['encrypted'] = true;
                         $data['bodyEncrypted'] = $_enda['ciphertext'];
@@ -369,7 +383,7 @@ class Responses
                     break;
                 case 'RSAIES':
                     $rsa = new RSA($this->public_key, $this->private_key);
-                    $_enda = $rsa->encrypt_ies(json_encode($data['body'], JSON_UNESCAPED_SLASHES));
+                    $_enda = $rsa->encrypt_ies(json_encode($data['body'], $this->json_encode_flags));
                     if($_enda !== false) { //加密成功
                         $data['encrypted'] = true;
                         $data['bodyEncrypted'] = $_enda['ciphertext'];
@@ -387,7 +401,7 @@ class Responses
                     break;
                 default:
                     $rsa = new RSA($this->public_key, $this->private_key);
-                    $_enda = $rsa->encrypt(json_encode($data['body'], JSON_UNESCAPED_SLASHES));
+                    $_enda = $rsa->encrypt(json_encode($data['body'], $this->json_encode_flags));
                     if($_enda !== false){ //加密成功
                         $data['encrypted'] = true;
                         $data['bodyEncrypted'] = $_enda;
@@ -458,7 +472,7 @@ class Responses
 
         header("Access-Control-Allow-Origin: *");
         header("Content-Type: application/json; charset=utf-8");
-        echo json_encode($data, JSON_UNESCAPED_SLASHES);
+        echo json_encode($data, $this->json_encode_flags);
         exit(0);
     }
 }

@@ -12,6 +12,7 @@ class Response
     protected static array $headers = [];
     protected static bool $encrypted = false;
     protected static string $encryption = 'RSA';
+    protected static int $json_encode_flags = JSON_UNESCAPED_SLASHES;
     protected static bool $return_data = false;
     protected static $instance;
 
@@ -25,6 +26,7 @@ class Response
      *   'headers'=>[] <br>
      *   'encrypted'=>true <br>
      *   'encryption'=>'RSAIES', <br>
+     *   'json_encode_flags'=>JSON_UNESCAPED_SLASHES, <br>
      *   'return_data'=>false <br>
      * ]</p>
      * @return static
@@ -58,7 +60,9 @@ class Response
         if(isset($options['return_data'])){
             self::$return_data = $options['return_data'];
         }
-
+        if(isset($options['json_encode_flags'])){
+            self::$json_encode_flags = $options['json_encode_flags'];
+        }
         if (self::$instance === null) {
             self::$instance = new static();
         }
@@ -77,16 +81,23 @@ class Response
     public static function getOptions(): array
     {
         return [
-            'secret'           => self::$secret,
-            'private_key'      => self::$private_key,
-            'private_key_bits' => self::$private_key_bits,
-            'public_key'       => self::$public_key,
-            'encrypted'        => self::$encrypted,
-            'encryption'       => self::$encryption,
-            'signType'         => self::$signType,
-            'headers'          => self::$headers,
-            'return_data'      => self::$return_data,
+            'secret'            => self::$secret,
+            'private_key'       => self::$private_key,
+            'private_key_bits'  => self::$private_key_bits,
+            'public_key'        => self::$public_key,
+            'encrypted'         => self::$encrypted,
+            'encryption'        => self::$encryption,
+            'signType'          => self::$signType,
+            'headers'           => self::$headers,
+            'return_data'       => self::$return_data,
+            'json_encode_flags' => self::$json_encode_flags,
         ];
+    }
+
+    public static function jsonEncodeFlags(int $flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+    {
+        self::$json_encode_flags = $flags;
+        return self::instance();
     }
 
     /**
@@ -325,7 +336,7 @@ class Response
             switch (self::$encryption){
                 case 'ECIES':
                     $ecdsa = new ECDSA(self::$public_key, self::$private_key);
-                    $_enda = $ecdsa->encrypt(json_encode($data['body'], JSON_UNESCAPED_SLASHES));
+                    $_enda = $ecdsa->encrypt(json_encode($data['body'], self::$json_encode_flags));
                     if($_enda !== false) { //加密成功
                         $data['encrypted'] = true;
                         $data['bodyEncrypted'] = $_enda['ciphertext'];
@@ -343,7 +354,7 @@ class Response
                     break;
                 case 'RSAIES':
                     $rsa = new RSA(self::$public_key, self::$private_key);
-                    $_enda = $rsa->encrypt_ies(json_encode($data['body'], JSON_UNESCAPED_SLASHES));
+                    $_enda = $rsa->encrypt_ies(json_encode($data['body'], self::$json_encode_flags));
                     if($_enda !== false) { //加密成功
                         $data['encrypted'] = true;
                         $data['bodyEncrypted'] = $_enda['ciphertext'];
@@ -361,7 +372,7 @@ class Response
                     break;
                 default:
                     $rsa = new RSA(self::$public_key, self::$private_key);
-                    $_enda = $rsa->encrypt(json_encode($data['body'], JSON_UNESCAPED_SLASHES));
+                    $_enda = $rsa->encrypt(json_encode($data['body'], self::$json_encode_flags));
                     if($_enda !== false){ //加密成功
                         $data['encrypted'] = true;
                         $data['bodyEncrypted'] = $_enda;
@@ -432,7 +443,7 @@ class Response
 
         header("Access-Control-Allow-Origin: *");
         header("Content-Type: application/json; charset=utf-8");
-        echo json_encode($data, JSON_UNESCAPED_SLASHES);
+        echo json_encode($data, self::$json_encode_flags);
         exit(0);
     }
 }

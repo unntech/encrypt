@@ -11,6 +11,7 @@ class Request
     protected static array $headers = [];
     protected static bool $encrypted = false;
     protected static string $encryption = 'RSA';
+    protected static int $json_encode_flags = JSON_UNESCAPED_SLASHES;
     protected static $instance;
 
     /**
@@ -23,6 +24,7 @@ class Request
      *   'headers'=>[] <br>
      *   'encrypted'=>true <br>
      *   'encryption'=>'RSAIES', <br>
+     *   'json_encode_flags'=>JSON_UNESCAPED_SLASHES, <br>
      * ]</p>
      * @return static
      */
@@ -52,6 +54,9 @@ class Request
         if(isset($options['encryption'])){
             self::$encryption = $options['encryption'];
         }
+        if(isset($options['json_encode_flags'])){
+            self::$json_encode_flags = $options['json_encode_flags'];
+        }
         if (self::$instance === null) {
             self::$instance = new static();
         }
@@ -70,15 +75,22 @@ class Request
     public static function getOptions(): array
     {
         return [
-            'secret'           => self::$secret,
-            'private_key'      => self::$private_key,
-            'private_key_bits' => self::$private_key_bits,
-            'public_key'       => self::$public_key,
-            'encrypted'        => self::$encrypted,
-            'encryption'       => self::$encryption,
-            'signType'         => self::$signType,
-            'headers'          => self::$headers
+            'secret'            => self::$secret,
+            'private_key'       => self::$private_key,
+            'private_key_bits'  => self::$private_key_bits,
+            'public_key'        => self::$public_key,
+            'encrypted'         => self::$encrypted,
+            'encryption'        => self::$encryption,
+            'signType'          => self::$signType,
+            'headers'           => self::$headers,
+            'json_encode_flags' => self::$json_encode_flags,
         ];
+    }
+
+    public static function jsonEncodeFlags(int $flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+    {
+        self::$json_encode_flags = $flags;
+        return self::instance();
     }
 
     /**
@@ -179,7 +191,7 @@ class Request
         $type = strtolower($type);
         switch ($type) {
             case 'json':
-                $ret = json_encode($d, JSON_UNESCAPED_SLASHES);
+                $ret = json_encode($d, self::$json_encode_flags);
                 break;
             case 'xml':
                 $dom = new \DOMDocument('1.0', 'UTF-8');
@@ -306,7 +318,7 @@ class Request
             switch (self::$encryption){
                 case 'ECIES':
                     $ecdsa = new ECDSA(self::$public_key, self::$private_key);
-                    $_enda = $ecdsa->encrypt(json_encode($data['body'], JSON_UNESCAPED_SLASHES));
+                    $_enda = $ecdsa->encrypt(json_encode($data['body'], self::$json_encode_flags));
                     if($_enda !== false) { //加密成功
                         $data['encrypted'] = true;
                         $data['bodyEncrypted'] = $_enda['ciphertext'];
@@ -324,7 +336,7 @@ class Request
                     break;
                 case 'RSAIES':
                     $rsa = new RSA(self::$public_key, self::$private_key);
-                    $_enda = $rsa->encrypt_ies(json_encode($data['body'], JSON_UNESCAPED_SLASHES));
+                    $_enda = $rsa->encrypt_ies(json_encode($data['body'], self::$json_encode_flags));
                     if($_enda !== false) { //加密成功
                         $data['encrypted'] = true;
                         $data['bodyEncrypted'] = $_enda['ciphertext'];
@@ -342,7 +354,7 @@ class Request
                     break;
                 default:
                     $rsa = new RSA(self::$public_key, self::$private_key);
-                    $_enda = $rsa->encrypt(json_encode($data['body'], JSON_UNESCAPED_SLASHES));
+                    $_enda = $rsa->encrypt(json_encode($data['body'], self::$json_encode_flags));
                     if($_enda !== false){ //加密成功
                         $data['encrypted'] = true;
                         $data['bodyEncrypted'] = $_enda;

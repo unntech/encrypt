@@ -11,6 +11,7 @@ class Requests
     protected array $headers = [];
     protected bool $encrypted = false;
     protected string $encryption = 'RSA';
+    protected int $json_encode_flags = JSON_UNESCAPED_SLASHES;
     protected static $instance;
 
     /**
@@ -23,10 +24,49 @@ class Requests
      *   'headers'=>[] <br>
      *   'encrypted'=>true <br>
      *   'encryption'=>'RSAIES', <br>
+     *   'json_encode_flags'=>JSON_UNESCAPED_SLASHES, <br>
      * ]</p>
      * @return $this
      */
     public function __construct(array $options = [])
+    {
+        return $this->setOptions($options);
+    }
+
+    /**
+     * @param array $options <p><br>
+     * [ 'secret'=>'', <br>
+     *   'private_key'=>'', <br>
+     *   'private_key_bits'=>1024, <br>
+     *   'public_key'=>'', <br>
+     *   'signType'=>'SHA256', <br>
+     *   'headers'=>[] <br>
+     *   'encrypted'=>true <br>
+     *   'encryption'=>'RSAIES', <br>
+     *   'json_encode_flags'=>JSON_UNESCAPED_SLASHES, <br>
+     * ]</p>
+     * @return $this
+     */
+    public static function instance(array $options = []): Requests
+    {
+        if (static::$instance === null) {
+            static::$instance = new static($options);
+        }else{
+            static::$instance->setOptions($options);
+        }
+        return static::$instance;
+    }
+
+    /**
+     * 获取签名方式
+     * @return string
+     */
+    public function getSignType(): string
+    {
+        return $this->signType;
+    }
+
+    public function setOptions(array $options)
     {
         if(isset($options['secret'])){
             $this->secret = $options['secret'];
@@ -52,50 +92,32 @@ class Requests
         if(isset($options['encryption'])){
             $this->encryption = $options['encryption'];
         }
-    }
-
-    /**
-     * @param array $options <p><br>
-     * [ 'secret'=>'', <br>
-     *   'private_key'=>'', <br>
-     *   'private_key_bits'=>1024, <br>
-     *   'public_key'=>'', <br>
-     *   'signType'=>'SHA256', <br>
-     *   'headers'=>[] <br>
-     *   'encrypted'=>true <br>
-     *   'encryption'=>'RSAIES', <br>
-     * ]</p>
-     * @return $this
-     */
-    public static function instance(array $options = []): Requests
-    {
-        if (static::$instance === null) {
-            static::$instance = new static($options);
+        if(isset($options['json_encode_flags'])){
+            $this->json_encode_flags = $options['json_encode_flags'];
         }
-        return static::$instance;
-    }
 
-    /**
-     * 获取签名方式
-     * @return string
-     */
-    public function getSignType(): string
-    {
-        return $this->signType;
+        return $this;
     }
 
     public function getOptions(): array
     {
         return [
-            'secret'           => $this->secret,
-            'private_key'      => $this->private_key,
-            'private_key_bits' => $this->private_key_bits,
-            'public_key'       => $this->public_key,
-            'encrypted'        => $this->encrypted,
-            'encryption'       => $this->encryption,
-            'signType'         => $this->signType,
-            'headers'          => $this->headers
+            'secret'            => $this->secret,
+            'private_key'       => $this->private_key,
+            'private_key_bits'  => $this->private_key_bits,
+            'public_key'        => $this->public_key,
+            'encrypted'         => $this->encrypted,
+            'encryption'        => $this->encryption,
+            'signType'          => $this->signType,
+            'headers'           => $this->headers,
+            'json_encode_flags' => $this->json_encode_flags,
         ];
+    }
+
+    public function jsonEncodeFlags(int $flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+    {
+        $this->json_encode_flags = $flags;
+        return $this;
     }
 
     /**
@@ -196,7 +218,7 @@ class Requests
         $type = strtolower($type);
         switch ($type) {
             case 'json':
-                $ret = json_encode($d, JSON_UNESCAPED_SLASHES);
+                $ret = json_encode($d, $this->json_encode_flags);
                 break;
             case 'xml':
                 $dom = new \DOMDocument('1.0', 'UTF-8');
@@ -323,7 +345,7 @@ class Requests
             switch ($this->encryption){
                 case 'ECIES':
                     $ecdsa = new ECDSA($this->public_key, $this->private_key);
-                    $_enda = $ecdsa->encrypt(json_encode($data['body'], JSON_UNESCAPED_SLASHES));
+                    $_enda = $ecdsa->encrypt(json_encode($data['body'], $this->json_encode_flags));
                     if($_enda !== false) { //加密成功
                         $data['encrypted'] = true;
                         $data['bodyEncrypted'] = $_enda['ciphertext'];
@@ -341,7 +363,7 @@ class Requests
                     break;
                 case 'RSAIES':
                     $rsa = new RSA($this->public_key, $this->private_key);
-                    $_enda = $rsa->encrypt_ies(json_encode($data['body'], JSON_UNESCAPED_SLASHES));
+                    $_enda = $rsa->encrypt_ies(json_encode($data['body'], $this->json_encode_flags));
                     if($_enda !== false) { //加密成功
                         $data['encrypted'] = true;
                         $data['bodyEncrypted'] = $_enda['ciphertext'];
@@ -359,7 +381,7 @@ class Requests
                     break;
                 default:
                     $rsa = new RSA($this->public_key, $this->private_key);
-                    $_enda = $rsa->encrypt(json_encode($data['body'], JSON_UNESCAPED_SLASHES));
+                    $_enda = $rsa->encrypt(json_encode($data['body'], $this->json_encode_flags));
                     if($_enda !== false){ //加密成功
                         $data['encrypted'] = true;
                         $data['bodyEncrypted'] = $_enda;

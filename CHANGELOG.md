@@ -1,6 +1,9 @@
 CHANGELOG
 =========
 
+### v1.0.5 `2025-06-17`
+* Response 和 Request JSON encode 时 增加 json_encode_flags 设定，可自定义flags参数，增加平台对接兼容性
+
 ### v1.0.4 `2025-06-16`
 * Response 增加`return_data`属性，可配置response是直接输出还是返回数组
 
