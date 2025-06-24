@@ -10,7 +10,7 @@ namespace UNNTech\Encrypt;
  *  生成临时ECDSA 密钥对
  *  使用对方公钥和临时私钥通过ECDH算法生成共享密钥
  *  生成随机AES密钥iv值
- *  用共享密钥对数据进行AES-128-CFB加密 参数 OPENSSL_RAW_DATA
+ *  用共享密钥对数据进行AES-256-CFB加密 参数 OPENSSL_RAW_DATA
  *  密文和iv值进行base64处理（支持HEX）
  *  使用SHA256计算哈希值(mac)，用于接收者验证数据完整性
  *  把 临时公钥 `tempPublicKey` 向量 `iv` 编码方式 `code` 密文哈希值 `mac` 加密类型 `ECIES` 放入 encryption 字段
@@ -18,7 +18,7 @@ namespace UNNTech\Encrypt;
  * ### ECIES 解密方式详解
  *  把接收到的密文使用SHA256计算哈希值，验证mac值是否相同，判定数据是否完整
  *  把接收到的 临时公钥 `tempPublicKey` 和自己的私钥通过ECDH算法生成共享密钥
- *  用共享密钥当作AES密钥和收到的向量 `iv` 采用 aes-128-cfb 进行解密， 参数 OPENSSL_RAW_DATA
+ *  用共享密钥当作AES密钥和收到的向量 `iv` 采用 aes-256-cfb 进行解密， 参数 OPENSSL_RAW_DATA
  *  得到原文
  *
  * @author: Jason
@@ -188,7 +188,7 @@ class ECDSA
      * ECIES加密
      * 使用 openssl_pkey_derive('对方公钥', '自己私钥') 获取共享密钥， 椭圆典线 Diffie-Hellman (ECDH)算法生成
      * 为增加安全性，使用临时密钥对的私钥，然后把临时公钥跟结果一并给对方
-     * 使用AES-128-CFB加密文本，参数选 OPENSSL_RAW_DATA
+     * 使用AES-256-CFB加密文本，参数选 OPENSSL_RAW_DATA
      * @param string $plaintext 明文数据
      * @param string $code 密文编码支持 base64 | hex | bin
      * @return false | array <p><br>
@@ -219,11 +219,17 @@ class ECDSA
             'curve_name' => $det['ec']['curve_name']
         ]);
         $symmetricKey = openssl_pkey_derive($publicKey, $tempKeyPair['private_key']); // ECDH算法生成共享密钥
+        if ($symmetricKey === false) {
+            return false;
+        }
 
-        // 使用对称密钥加密消息（AES-128-CFB）
-        $cipher_method = 'aes-128-cfb';
+        // 使用对称密钥加密消息（AES-256-CFB）
+        $cipher_method = 'aes-256-cfb';
         $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($cipher_method));
         $encryptedMessage = openssl_encrypt($plaintext, $cipher_method, $symmetricKey, OPENSSL_RAW_DATA, $iv);
+        if ($encryptedMessage === false) {
+            return false;
+        }
         $ciphertext = Encode::encode($encryptedMessage, $code );
         //使用SHA256计算密文哈希值
         $mac = strtoupper(hash("sha256", $ciphertext));
@@ -264,7 +270,7 @@ class ECDSA
             }
         }
         // 3. 解密密文
-        $plaintext = openssl_decrypt(Encode::decode($ciphertext, $code), 'aes-128-cfb', $symmetricKey, OPENSSL_RAW_DATA, Encode::decode($iv, $code));
+        $plaintext = openssl_decrypt(Encode::decode($ciphertext, $code), 'aes-256-cfb', $symmetricKey, OPENSSL_RAW_DATA, Encode::decode($iv, $code));
 
         return $plaintext === false ? null : $plaintext;
     }

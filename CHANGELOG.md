@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+### v1.0.6 `0205-06-23`
+* 修改AES加密`iv`参数值为随机产生，并放于密文头部
+* `ECIES`, `RASIES` 数据加密改用 `AES-256-CFB`
+* 增加`WebToken`类，用于签发及验签token
+
 ### v1.0.5 `2025-06-17`
 * Response 和 Request JSON encode 时 增加 json_encode_flags 设定，可自定义flags参数，增加平台对接兼容性
 

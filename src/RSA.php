@@ -15,7 +15,7 @@ namespace UNNTech\Encrypt;
  * ### RSAIES 加密方式详解
  *  生成随机AES密钥，使用 RSA 加密方法对其加密
  *  生成随机AES密钥iv值
- *  用随机AES密钥对数据进行AES-128-CFB加密，参数 OPENSSL_RAW_DATA
+ *  用随机AES密钥对数据进行AES-256-CFB加密，参数 OPENSSL_RAW_DATA
  *  密文和iv值进行base64处理（支持HEX）
  *  使用SHA256计算哈希值(mac)，用于接收者验证数据完整性
  *  把 加密的随机AES密钥 `cipher` 向量 `iv` 编码方式 `code` 密文哈希值 `mac` 加密类型 `RSAIES` 放入 encryption 字段
@@ -23,7 +23,7 @@ namespace UNNTech\Encrypt;
  * ### RSAIES 解密方式详解
  *  把接收到的密文使用SHA256计算哈希值，验证mac值是否相同，判定数据是否完整
  *  把接收到的 加密的随机AES密钥 `cipher` 编码还原 `base64_decode` 后，使用 RSA 解密方法对其解密得到AES密钥原文
- *  用得到的随机AES密钥和收到的向量 `iv` 采用 aes-128-cfb 进行解密， 参数 OPENSSL_RAW_DATA
+ *  用得到的随机AES密钥和收到的向量 `iv` 采用 aes-256-cfb 进行解密， 参数 OPENSSL_RAW_DATA
  *  得到原文
  *
  *
@@ -201,6 +201,8 @@ class RSA
             $result = '';
             if (openssl_public_encrypt( $chunk, $result, $publicKey, $padding ) ) {
                 $crypto .= $result;
+            }else{
+                return false;
             }
         }
         if ($crypto != '') {
@@ -240,7 +242,7 @@ class RSA
     /**
      * RASIES加密
      * 生成随机AES密钥，使用 RSA 加密方法对其加密
-     * 使用AES-128-CFB加密文本，参数选 OPENSSL_RAW_DATA
+     * 使用AES-256-CFB加密文本，参数选 OPENSSL_RAW_DATA
      * @param string $plaintext 明文数据
      * @param string $code 密文编码支持 base64 | hex | bin
      * @return false | array <p><br>
@@ -256,13 +258,16 @@ class RSA
     {
         $publicKey = $this->third_public_key;
         // 生成随机对称密钥
-        $cipher_method = 'aes-128-cfb';
-        $symmetricKey = openssl_random_pseudo_bytes(16); // 使用 AES-128 密钥长度
+        $cipher_method = 'aes-256-cfb';
+        $symmetricKey = openssl_random_pseudo_bytes(32); // 使用 AES-256 密钥长度
         $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($cipher_method));
         // 使用公钥加密对称密钥（使用 RASIES 过程）
         openssl_public_encrypt( $symmetricKey, $encryptedKey, $publicKey, $padding );
-        // 使用对称密钥加密消息（AES-128-CFB）
+        // 使用对称密钥加密消息（AES-256-CFB）
         $encryptedMessage = openssl_encrypt($plaintext, $cipher_method, $symmetricKey, OPENSSL_RAW_DATA, $iv);
+        if ($encryptedMessage === false) {
+            return false;
+        }
         $ciphertext = Encode::encode($encryptedMessage, $code );
         //使用SHA256计算密文哈希值
         $mac = strtoupper(hash("sha256", $ciphertext));
@@ -281,7 +286,7 @@ class RSA
     /**
      * RASIES 解密
      * 使用RSA解密方法对 $cipher 解密，得到AES密钥
-     * 使用AES-128-CFB解密密文，参数选 OPENSSL_RAW_DATA，得到明文
+     * 使用AES-256-CFB解密密文，参数选 OPENSSL_RAW_DATA，得到明文
      * @param string $ciphertext 密文
      * @param string $cipher 加密的AES密钥
      * @param string $iv AES加密向量
@@ -305,7 +310,7 @@ class RSA
             }
         }
         // 3. 解密密文
-        $plaintext = openssl_decrypt(Encode::decode($ciphertext, $code), 'aes-128-cfb', $symmetricKey, OPENSSL_RAW_DATA, Encode::decode($iv, $code));
+        $plaintext = openssl_decrypt(Encode::decode($ciphertext, $code), 'aes-256-cfb', $symmetricKey, OPENSSL_RAW_DATA, Encode::decode($iv, $code));
 
         return $plaintext;
     }
