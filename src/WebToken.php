@@ -85,7 +85,7 @@ class WebToken
      * @param bool|string $salt 是否需要（并使用盐值）生成签名，防止数据被篡改，提高安全性
      * @return bool|string 加密后字符串
      */
-    public function getToken(array $jwt, int $exp = 0,  $salt = false)
+    public function getToken(array $jwt, int $exp = 0,  $salt = true)
     {
         if($exp != 0){
             $jwt['exp'] = time() + $exp;

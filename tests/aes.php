@@ -18,7 +18,7 @@ $c = AES::instance('EF41490A17037CABE3253B785A2194EE')->encrypt('cbbaa77e-8447-4
 $p = AES::instance()->decrypt($c);
 var_dump($c, $p);
 
-$token = WebToken::instance('FF41490A17037CABE3253B785A2194EF')->getToken(['sub'=>123], 600, true);
+$token = WebToken::instance('FF41490A17037CABE3253B785A2194EF')->getToken(['sub'=>123], 600);
 var_dump($token);
 $data = WebToken::instance()->verifyToken($token);
 var_dump($data);

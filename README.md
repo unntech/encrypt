@@ -51,6 +51,17 @@ encrypt/
 
 ## 使用示例
 
+### access_token 生成及校验
+```php
+use UNNTech\Encrypt\WebToken;
+
+// 生成 token
+$token = WebToken::instance('aes key')->getToken(['sub'=>123], 600);
+// 校验token及获取数据
+$data = WebToken::instance()->verifyToken($token);
+
+```
+
 ### AES 加解密
 ```php
 use UNNTech\Encrypt\AES;
