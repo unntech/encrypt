@@ -66,7 +66,7 @@ $data = WebToken::instance()->verifyToken($token);
 ```php
 use UNNTech\Encrypt\AES;
 
-$aes = new AES('key', 'iv');
+$aes = new AES('key');
 // 加密
 $ciphertext = $aes->encrypt('plaintext');
 // 解密

@@ -276,6 +276,16 @@ class ECDSA
     }
 
     /**
+     * 使用公私钥 ECDH算法生成共享密钥
+     * @return false|string
+     */
+    public function sharedSecret(string $code = 'base64')
+    {
+        $key = openssl_pkey_derive($this->third_public_key, $this->private_key); // ECDH算法生成共享密钥
+        return $key === false ? false : Encode::encode($key, $code);
+    }
+
+    /**
      * 生成ECDSA非对称密钥对
      * @param array $options
      * @return array
