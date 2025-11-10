@@ -16,6 +16,7 @@ $data = ['abc'=>123];
 //Responses::instance(['private_key' => $privateKey, 'public_key' => $publicKey, 'signType'=>'ECDSA'])->encrypted()->encryption('ECIES')->success($data);
 
 Response::instance(['private_key' => $privateKey, 'public_key' => $publicKey, 'signType'=>'ECDSA'])::encrypted()::encryption('ECIES');
+//Response::instance(['secret' => $secret, 'signType'=>'SHA256'])::encrypted()::encryption('AES');
 Response::success($data);
 
 //$req = Requests::instance(['secret' => $secret, 'signType'=>'SHA256'])->headers(['access_token'=>'token'])->generate($data, 'object');

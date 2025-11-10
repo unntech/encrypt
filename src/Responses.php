@@ -198,7 +198,7 @@ class Responses
 
     /**
      * 设置加密类型
-     * @param string $encryption RSA | ECIES | RSAIES
+     * @param string $encryption RSA | ECIES | RSAIES | AES
      * @return $this
      */
     public function encryption(string $encryption = 'RSA')
@@ -330,6 +330,10 @@ class Responses
                     $rsa = new RSA($this->public_key, $this->private_key);
                     $dc = $rsa->decrypt_ies($data['bodyEncrypted'], $en['cipher'], $en['iv'], $en['mac'], $en['code']);
                     break;
+                case 'AES':
+                    $en = $data['encryption'];
+                    $dc = AES::instance($this->secret, $en['cipher'] ?? null)->decrypt($data['bodyEncrypted'], $en['code'] ?? 'base64');
+                    break;
                 default:
                     $rsa = new RSA($this->public_key, $this->private_key);
                     $dc = $rsa->decrypt($data['bodyEncrypted']);
@@ -397,6 +401,17 @@ class Responses
                         ];
                     }else{
                         $_encryption = ['type'=>'RSAIES'];
+                    }
+                    break;
+                case 'AES':
+                    $_enda = AES::instance($this->secret)->encrypt(json_encode($data['body'], $this->json_encode_flags));
+                    if($_enda !== false){ //加密成功
+                        $data['encrypted'] = true;
+                        $data['bodyEncrypted'] = $_enda;
+                        $data['body'] = ['data'=>'encrypted'];
+                        $_encryption = ['type'=>'AES', 'cipher'=>'AES-256-CBC', 'code'=>'base64'];
+                    }else{
+                        $_encryption = ['type'=>'AES'];
                     }
                     break;
                 default:
